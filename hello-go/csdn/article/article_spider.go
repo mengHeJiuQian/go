@@ -1,9 +1,13 @@
-package article
+package main
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
+	"github.com/gocolly/colly"
+	"strings"
+	// "github.com/gocolly/colly"
+	"github.com/PuerkitoBio/goquery"
+	"hello-go/csdn/model"
+	httputils "hello-go/utils"
 )
 
 /**
@@ -18,22 +22,36 @@ const mongoCollection = "article_base"
 func main() {
 
 	beginUrl := "https://blog.csdn.net/wei242425445/article/details/88417407"
-
-	html, _ := httpGetHtml(beginUrl)
-
-}
-
-func httpGetHtml(url string) (htmlText string, error error) {
-	resp, respErr := http.Get(url)
-	if respErr != nil {
-		error = respErr
-		fmt.Println("抓取网页出现问题，url=" + url)
+	if !strings.Contains(beginUrl, "/article/details/") {
+		fmt.Println(beginUrl + "不是一个文章链接，跳过")
 		return
 	}
 
-	defer resp.Body.Close()
+	// 初始化colly
+	c := colly.NewCollector()
 
-	bodyByte, _ := ioutil.ReadAll(resp.Body)
-	bodyStr := string(bodyByte)
-	return bodyStr, error
+	htmlText, _ := httputils.HttpGetHtml(beginUrl)
+	cArticleInfo := filterArticleInfo(htmlText)
+	fmt.Print(cArticleInfo)
+}
+
+/*compile := regexp.MustCompile(csdnUrlRe)
+allSubmatch := compile.FindAllStringSubmatch(contents, -1)
+
+urlList := list.New()
+
+for _, submatch := range allSubmatch {
+	var urlWithShit = submatch[0]
+	index := strings.Index(urlWithShit, "\"")
+	index++
+	urlWithShit = urlWithShit[index:]
+
+	url := urlWithShit[0 : len(urlWithShit)-1]
+	urlList.PushBack(url)
+}*/
+// 提取出csdn文件的一些内容
+func filterArticleInfo(htmlText string) *model.CArticleInfo {
+	fmt.Println(htmlText)
+
+	return &model.CArticleInfo{}
 }
